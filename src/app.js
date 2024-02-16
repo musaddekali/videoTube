@@ -15,18 +15,17 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
 
-// Routes import
 
-app.get("/", (req, res) => {
+app.all("/api/v1", (_, res) => {
   res.json({
-    msg: "hello world"
+    msg: "hello api"
   });
 });
 
-app.get("/mahid", (req, res) => {
-  res.send({
-    msg: "Hello mahid, How are you?"
-  });
-});
+// Routes import
+import userRoutes from "./routes/userRoutes.js";
+
+// Routes declearation
+app.use("/api/v1/users", userRoutes);
 
 export { app };
