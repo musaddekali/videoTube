@@ -1,4 +1,5 @@
 import { User } from "../models/userModel.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const registerUser = async (req, res) => {
   // get user data from frontend
@@ -20,10 +21,23 @@ const registerUser = async (req, res) => {
       throw new Error("User already exist.");
     }
 
+    const avatarLocalPath = req.file?.path;
+
+    if (!avatarLocalPath) {
+      throw new Error("Avatar file is required");
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+    if (!avatar) {
+      throw new Error("Avatar file is required");
+    }
+
     const user = await User.create({
       name,
       email,
-      password
+      password,
+      avatar: avatar.url
     });
 
     const createdUser = await User.findById(user._id).select("-password");
@@ -32,13 +46,11 @@ const registerUser = async (req, res) => {
       throw new Error("Some went wrong while registering the user");
     }
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "User registered Successfully!",
-        data: createdUser
-      });
+    res.status(200).json({
+      success: true,
+      message: "User registered Successfully!",
+      data: createdUser
+    });
   } catch (error) {
     res
       .status(error.code || 500)
